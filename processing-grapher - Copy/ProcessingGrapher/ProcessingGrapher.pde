@@ -545,9 +545,10 @@ void handleLoginKeyInput() {
  * Handle keyboard input on main application
  */
 void handleMainApplicationKeyInput() {
-  // Global shortcuts
-  if (keyCode == CONTROL || keyCode == META) {
-    // Handle control key combinations in keyReleased
+  // Handle control key combinations
+  if ((keyPressed && (keyCode == CONTROL || keyCode == 157)) || // 157 is right control on some systems
+      (keyPressed && key == 17)) { // ASCII 17 is control character
+    // Control key is pressed - handle in keyReleased for combinations
   } else if (tabList[currentTab] != null) {
     boolean codedKey = (key == CODED);
     tabList[currentTab].keyboardInput(key, keyCode, codedKey);
@@ -830,9 +831,6 @@ void exit() {
   }
 }
 
-// Utility functions and helper methods would go here...
-// (Include all the utility functions from the original file)
-
 /**
  * UI resize function
  */
@@ -868,9 +866,6 @@ void uiResize(float change) {
   redrawContent = true;
 }
 
-// Add other utility functions from the original ProcessingGrapher.pde file here...
-// (Include functions like alertMessage, myShowInputDialog, etc.)
-
 /**
  * Show alert message
  */
@@ -887,4 +882,219 @@ String myShowInputDialog(String title, String label, String defaultValue) {
   return defaultValue;
 }
 
-// Include other utility functions as needed...
+/**
+ * Constrain string length to fit within specified width
+ */
+String constrainString(String inputString, float maxWidth) {
+  if (textWidth(inputString) <= maxWidth) {
+    return inputString;
+  }
+  
+  String constrainedString = inputString;
+  while (textWidth(constrainedString + "...") > maxWidth && constrainedString.length() > 0) {
+    constrainedString = constrainedString.substring(0, constrainedString.length() - 1);
+  }
+  
+  return constrainedString + "...";
+}
+
+/**
+ * Round number to significant figures
+ */
+float roundToSigFig(float value, int sigFigs) {
+  if (value == 0) return 0;
+  
+  float magnitude = pow(10, floor(log(abs(value)) / log(10)) - sigFigs + 1);
+  return round(value / magnitude) * magnitude;
+}
+
+/**
+ * Floor number to significant figures
+ */
+float floorToSigFig(float value, int sigFigs) {
+  if (value == 0) return 0;
+  
+  float magnitude = pow(10, floor(log(abs(value)) / log(10)) - sigFigs + 1);
+  return floor(value / magnitude) * magnitude;
+}
+
+/**
+ * Ceiling number to significant figures
+ */
+float ceilToSigFig(float value, int sigFigs) {
+  if (value == 0) return 0;
+  
+  float magnitude = pow(10, floor(log(abs(value)) / log(10)) - sigFigs + 1);
+  return ceil(value / magnitude) * magnitude;
+}
+
+/**
+ * Draw a heading in the sidebar
+ */
+void drawHeading(String text, int x, int y, int w, int h) {
+  fill(c_sidebar_heading);
+  textAlign(LEFT, CENTER);
+  textFont(base_font);
+  text(text, x, y + h/2);
+}
+
+/**
+ * Draw a button in the sidebar
+ */
+void drawButton(String text, color buttonColor, int x, int y, int w, int h, int textHeight) {
+  fill(buttonColor);
+  stroke(c_sidebar_divider);
+  rect(x, y, w, h);
+  
+  fill(c_sidebar_text);
+  textAlign(CENTER, CENTER);
+  textFont(base_font);
+  text(text, x + w/2, y + h/2);
+}
+
+/**
+ * Draw a data box in the sidebar
+ */
+void drawDatabox(String text, color textColor, int x, int y, int w, int h, int textHeight) {
+  fill(c_sidebar);
+  stroke(c_sidebar_divider);
+  rect(x, y, w, h);
+  
+  fill(textColor);
+  textAlign(LEFT, CENTER);
+  textFont(base_font);
+  text(constrainString(text, w - 10), x + 5, y + h/2);
+}
+
+/**
+ * Draw text in the sidebar
+ */
+void drawText(String text, color textColor, int x, int y, int w, int h) {
+  fill(textColor);
+  textAlign(LEFT, CENTER);
+  textFont(base_font);
+  text(constrainString(text, w - 10), x + 5, y + h/2);
+}
+
+/**
+ * Draw a rectangle
+ */
+void drawRectangle(color rectColor, int x, int y, int w, int h) {
+  fill(rectColor);
+  noStroke();
+  rect(x, y, w, h);
+}
+
+/**
+ * Draw a triangle
+ */
+void drawTriangle(color triangleColor, int x1, int y1, int x2, int y2, int x3, int y3) {
+  fill(triangleColor);
+  noStroke();
+  triangle(x1, y1, x2, y2, x3, y3);
+}
+
+/**
+ * Check if mouse click is within specified area
+ */
+boolean menuXYclick(int mouseX, int mouseY, int startY, int itemHeight, int itemH, float itemNumber, int itemLeft, int itemWidth) {
+  int itemY = startY + round(itemHeight * itemNumber);
+  return (mouseX >= itemLeft && mouseX <= itemLeft + itemWidth && 
+          mouseY >= itemY && mouseY <= itemY + itemH);
+}
+
+/**
+ * Check if mouse click is within specified X range
+ */
+boolean menuXclick(int mouseX, int startX, int width) {
+  return (mouseX >= startX && mouseX <= startX + width);
+}
+
+/**
+ * Draw a message area with title and content
+ */
+void drawMessageArea(String title, String[] message, int x, int y, int w) {
+  // Calculate total height needed
+  int lineHeight = round(16 * uimult);
+  int titleHeight = round(20 * uimult);
+  int padding = round(10 * uimult);
+  int totalHeight = titleHeight + (message.length * lineHeight) + (padding * 2);
+  
+  // Draw background
+  fill(c_info_message_box);
+  stroke(c_message_box_outline);
+  rect(x, y, w, totalHeight);
+  
+  // Draw title
+  fill(c_sidebar_heading);
+  textAlign(CENTER, TOP);
+  textFont(base_font);
+  textSize(14);
+  text(title, x + w/2, y + padding);
+  
+  // Draw message lines
+  fill(c_message_text);
+  textAlign(LEFT, TOP);
+  textSize(12);
+  for (int i = 0; i < message.length; i++) {
+    text(message[i], x + padding, y + titleHeight + padding + (i * lineHeight));
+  }
+}
+
+/**
+ * Draw a color selector
+ */
+void drawColorSelector(color currentColor, int x, int y, int w, int h) {
+  // Draw color wheel/selector
+  colorMode(HSB, w, w, w);
+  for (int i = 0; i < w; i++) {
+    for (int j = 0; j < h; j++) {
+      stroke(color(i, j, w));
+      point(x + i, y + j);
+    }
+  }
+  colorMode(RGB, 255, 255, 255);
+  
+  // Draw border
+  noFill();
+  stroke(c_sidebar_divider);
+  rect(x, y, w, h);
+}
+
+/**
+ * Draw a 2D color box
+ */
+void drawColorBox2D(color currentColor, color color1, color color2, int x, int y, int w, int h) {
+  for (int i = 0; i < w; i++) {
+    color c = lerpColor(color1, color2, (float)i / w);
+    stroke(c);
+    line(x + i, y, x + i, y + h);
+  }
+  
+  // Draw border
+  noFill();
+  stroke(c_sidebar_divider);
+  rect(x, y, w, h);
+}
+
+/**
+ * File selection callback
+ */
+void fileSelected(File selection) {
+  if (selection == null) {
+    println("Window was closed or the user hit cancel.");
+  } else {
+    println("User selected " + selection.getAbsolutePath());
+    if (tabList[currentTab] != null) {
+      tabList[currentTab].setOutput(selection.getAbsolutePath());
+    }
+  }
+}
+
+/**
+ * Start scrolling function
+ */
+void startScrolling(boolean isContent) {
+  startScrolling = true;
+  scrollingActive = isContent;
+}
