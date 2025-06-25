@@ -1,4 +1,3 @@
-
 class LoginManager {
   private boolean isLoggedIn = false;
   private HashMap<String, String> userCredentials;

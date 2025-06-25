@@ -1,4 +1,3 @@
-
 class TextField {
   float x, y, w, h;
   String text = "";
@@ -18,15 +17,23 @@ class TextField {
   
   void draw() {
     // Draw field background
-    stroke(150);
-    fill(255);
+    stroke(c_sidebar_divider);
+    fill(c_sidebar_button);
     rect(x, y, w, h);
     
     // Draw text
-    fill(0);
+    fill(c_sidebar_text);
     textAlign(LEFT, CENTER);
+    textFont(base_font);
     String displayText = isPassword ? new String(new char[text.length()]).replace("\0", "*") : text;
-    text(displayText, x + 5, y + h/2);
+    
+    // Clip text if it's too long
+    String clippedText = displayText;
+    while (textWidth(clippedText) > w - 10 && clippedText.length() > 0) {
+      clippedText = clippedText.substring(1);
+    }
+    
+    text(clippedText, x + 5, y + h/2);
     
     // Draw cursor when focused
     if (isFocused) {
@@ -35,8 +42,8 @@ class TextField {
         lastBlink = millis();
       }
       if (showCursor) {
-        float cursorX = x + 5 + textWidth(displayText.substring(0, cursorPosition));
-        stroke(0);
+        float cursorX = x + 5 + textWidth(clippedText);
+        stroke(c_sidebar_text);
         line(cursorX, y + 5, cursorX, y + h - 5);
       }
     }
@@ -58,11 +65,11 @@ class TextField {
       if (text.length() > 0 && cursorPosition < text.length()) {
         text = text.substring(0, cursorPosition) + text.substring(cursorPosition + 1);
       }
-    } else if (key == LEFT) {
+    } else if (keyCode == LEFT) {
       cursorPosition = max(0, cursorPosition - 1);
-    } else if (key == RIGHT) {
+    } else if (keyCode == RIGHT) {
       cursorPosition = min(text.length(), cursorPosition + 1);
-    } else if (key >= ' ' && key <= '~') {
+    } else if (key >= ' ' && key <= '~' && key != TAB) {
       text = text.substring(0, cursorPosition) + key + text.substring(cursorPosition);
       cursorPosition++;
     }
